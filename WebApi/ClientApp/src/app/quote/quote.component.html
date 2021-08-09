@@ -1,0 +1,25 @@
+<button (click)="currencyRatesLoadHandler()" class="btn btn-primary">Reload Rates</button>
+<br />
+<div class="row">
+    <div class="col-sm-4">
+        Currency
+    </div>
+    <div class="col-sm-4">
+        Sell
+    </div>
+    <div class="col-sm-4">
+        Buy
+    </div>
+</div>
+<div class="row" *ngFor="let currencyRate of currencyRates">
+
+    <div class="col-sm-4">
+        {{currencyRate.currencyCode}}
+    </div>
+    <div class="col-sm-4">
+        {{currencyRate.buy| number:'1.2-2'}}
+    </div>
+    <div class="col-sm-4">
+        {{currencyRate.sell| number:'1.2-2'}}
+    </div>
+</div>
