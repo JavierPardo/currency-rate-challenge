@@ -13,24 +13,24 @@ namespace Service.Test
 {
     public class ExchangeServiceTests
     {
-        private Mock<IExchangeRateSource> _exchangeRateSource;
-        private Mock<IExchangeRateSource> _notImplementedRateSource;
+        private Mock<IExchangeRateSource> _mockExchangeRateSource;
+        private Mock<IExchangeRateSource> _mockNotImplementedRateSource;
         private ExchangeService _exchangeService;
 
         [SetUp]
         public void Setup()
         {
-            _exchangeRateSource = new Mock<IExchangeRateSource>();
-            _notImplementedRateSource = new Mock<IExchangeRateSource>();
+            _mockExchangeRateSource = new Mock<IExchangeRateSource>();
+            _mockNotImplementedRateSource = new Mock<IExchangeRateSource>();
             Func<CurrencyCodeEnum, IExchangeRateSource> func = key =>
             {
                 switch (key)
                 {
                     case CurrencyCodeEnum.BRL:
                     case CurrencyCodeEnum.USD:
-                        return _exchangeRateSource.Object;
+                        return _mockExchangeRateSource.Object;
                     default:
-                        return _notImplementedRateSource.Object;
+                        return _mockNotImplementedRateSource.Object;
                 }
             };
             _exchangeService = new ExchangeService(func);
@@ -45,7 +45,7 @@ namespace Service.Test
                 Sell = 20,
                 CurrencyCode = "USD"
             };
-            _exchangeRateSource
+            _mockExchangeRateSource
                 .Setup<Task<ExchangeRate>>(p => p.GetRate(default(CancellationToken)))
                 .ReturnsAsync(expected);
 
@@ -59,7 +59,7 @@ namespace Service.Test
         [Test]
         public void GivenAnInvalidCurrencyRequestRate_WhenNotExistsImplementation_ThenItShouldReturnAnExceptionResponse()
         {
-            _notImplementedRateSource
+            _mockNotImplementedRateSource
                 .Setup<Task<ExchangeRate>>(p => p.GetRate(default(CancellationToken)))
                 .Throws(new WrongCurrencyException());
 
@@ -71,22 +71,23 @@ namespace Service.Test
         [Test]
         public async Task GivenAllCurrenciesRates_WhenExistsImplementation_ThenItOnlyImplementedRates()
         {
-            var validRate = new ExchangeRate{};
+            var validRate = new ExchangeRate { };
 
-            _exchangeRateSource
+            _mockExchangeRateSource
                 .Setup<Task<ExchangeRate>>(p => p.GetRate(default(CancellationToken)))
                 .ReturnsAsync(validRate);
 
-            _notImplementedRateSource
+            _mockNotImplementedRateSource
                 .Setup<Task<ExchangeRate>>(p => p.GetRate(default(CancellationToken)))
                 .Throws(new WrongCurrencyException());
             var expected = 2;
             var actual = 0;
-            await foreach (var rate in _exchangeService.GetAllRates()) {
+            await foreach (var rate in _exchangeService.GetAllRates())
+            {
                 actual++;
             }
             Assert.AreEqual(expected, actual);
 
         }
-    }        
+    }
 }

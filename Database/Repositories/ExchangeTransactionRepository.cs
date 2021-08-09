@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Model;
 using Model.Enum;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,11 +24,27 @@ namespace Database.Repositories
             _dbSet = context.Set<ExchangeTransaction>();
         }
 
-        public IEnumerable<ExchangeTransaction> GetAllByMonthAndUserId(long userId, int month)
+        public IEnumerable<ExchangeTransaction> GetAllByMonthCurrencyAndUserId(ExchangeTransaction exchangeTransaction)
         {
-            return _dbSet.Where(et => et.UserId == userId
-            && et.DateTime.Month == month
-            && et.Status == (int)ExchangeTransactionStatus.Success);
+            _logger.LogInformation($"Querying information for :{JsonConvert.SerializeObject(exchangeTransaction)}");
+            return _dbSet.Where(et => et.UserId == exchangeTransaction.UserId
+            && et.DateTime.Month == exchangeTransaction.DateTime.Month
+            && et.CurrencyCodeOutput == exchangeTransaction.CurrencyCodeOutput
+            && et.Status == (int)ExchangeTransactionStatusEnum.Success).ToList();
+        }
+
+        public void Save(ExchangeTransaction exchangeTransaction)
+        {
+            _logger.LogInformation($"Saving information :{JsonConvert.SerializeObject(exchangeTransaction)}");
+            if (exchangeTransaction.Id == Guid.Empty)
+            {
+                _dbSet.Add(exchangeTransaction);
+            }
+            else
+            {
+                _dbSet.Update(exchangeTransaction);
+            }
+            _context.SaveChanges();
         }
     }
 }

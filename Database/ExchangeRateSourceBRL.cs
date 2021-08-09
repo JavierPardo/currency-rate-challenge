@@ -1,5 +1,6 @@
 ﻿using Database.Interfaces;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Model;
 using Model.DTO;
 using Model.Enum;
@@ -17,7 +18,7 @@ namespace Database
         private readonly string _currenctCode = "BRL";
         private readonly CurrencyConfig _currentConfig = null;
 
-        public ExchangeRateSourceBRL(IConfiguration configuration) : base(configuration)
+        public ExchangeRateSourceBRL(IConfiguration configuration, ILogger<ExchangeRateSourceBRL> logger) : base(configuration, logger)
         {
             var currencyConfigs = configuration.GetSection("CurrenciesConfig").Get<CurrencyConfig[]>();
             _currentConfig = currencyConfigs.FirstOrDefault(cc => cc.CurrencyCode == _currenctCode);
@@ -30,6 +31,13 @@ namespace Database
             exchangeRate.Buy = exchangeRate.Buy / 4;
             exchangeRate.Sell = exchangeRate.Sell / 4;
             return exchangeRate;
+        }
+
+        public new decimal GetLimit()
+        {
+            _logger.LogInformation($"Monthy limit :{_currentConfig.Limit} --- For:{_currentConfig.CurrencyCode}");
+
+            return _currentConfig.Limit;
         }
     }
 }

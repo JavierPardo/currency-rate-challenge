@@ -7,6 +7,7 @@ namespace Database.Interfaces
 {
     public interface IExchangeTransactionRepository
     {
-        IEnumerable<ExchangeTransaction> GetAllByMonthAndUserId(long userId, int month);
+        IEnumerable<ExchangeTransaction> GetAllByMonthCurrencyAndUserId(ExchangeTransaction exchangeTransaction);
+        void Save(ExchangeTransaction exchangeTransaction);
     }
 }

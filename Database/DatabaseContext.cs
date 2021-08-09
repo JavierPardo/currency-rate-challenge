@@ -18,7 +18,7 @@ namespace Database
         public DatabaseContext(IConfiguration configuration, ILoggerFactory loggerFactory, ILogger<DatabaseContext> logger)
         {
             _loggerFactory = loggerFactory;
-
+            _configuration = configuration;
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)

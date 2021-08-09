@@ -1,8 +1,10 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
 const purchaseModel: any = {
   userId: "",
@@ -35,17 +37,25 @@ export class PurchaseComponent implements OnInit {
       })
   }
 
+  handleError(err: HttpErrorResponse){
+    alert(`Error!!!\n${err.error}`);
+    this.ngxSpinnerService.hide();
+    return throwError(err);
+  }
+
   onSubmit(): void {
     //this.modalService.open("Message")
     this.ngxSpinnerService.show();
     const purchase = {
       userId: this.purchaseForm.value.userId,
       amountInput: parseFloat(this.purchaseForm.value.amount),
-      currencyCodeInput: this.purchaseForm.value.currencyCode
+      currencyCodeOutput: this.purchaseForm.value.currencyCode
     }
 
     this.httpClient.post("/api/exchangetransaction", { ...purchase })
-      .subscribe(() => {
+    .pipe(catchError(this.handleError.bind(this)))
+      .subscribe(data => {
+        alert(`Success!!!\n You get ${data.amountOutput} ${data.currencyCodeOutput}`);
         this.ngxSpinnerService.hide();
         this.purchaseForm.reset();
       })

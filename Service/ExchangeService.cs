@@ -6,15 +6,20 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Service
 {
     public class ExchangeService: IExchangeService
     {
         private Func<CurrencyCodeEnum, IExchangeRateSource> _exchangeSourceSolver;
-        public ExchangeService(Func<CurrencyCodeEnum, IExchangeRateSource> exchangeSourceSolver)
+        private readonly ILogger<ExchangeService> _logger;
+
+        public ExchangeService(Func<CurrencyCodeEnum, IExchangeRateSource> exchangeSourceSolver, ILogger<ExchangeService> logger )
         {
             _exchangeSourceSolver = exchangeSourceSolver;
+            _logger = logger;
         }
 
         public async IAsyncEnumerable<ExchangeRate> GetAllRates()
@@ -28,15 +33,25 @@ namespace Service
             yield break;
         }
 
-        public async Task<ExchangeRate> GetRateByCurrencyCode(string currencyCode)
+        private IExchangeRateSource GetExchangeSourceBySourceCode(string currencyCode)
         {
+            _logger.LogInformation($"Getting Exchange Source for: {currencyCode}");
             object currentCurrencyCode;
             if (!Enum.TryParse(typeof(CurrencyCodeEnum), currencyCode, true, out currentCurrencyCode))
             {
                 currentCurrencyCode = CurrencyCodeEnum.None;
             }
-            var exchangeRateSource = _exchangeSourceSolver((CurrencyCodeEnum)currentCurrencyCode);
-            return await exchangeRateSource.GetRate();
+            return _exchangeSourceSolver((CurrencyCodeEnum)currentCurrencyCode);
+        }
+
+
+        public async Task<ExchangeRate> GetRateByCurrencyCode(string currencyCode)
+        {
+            var exchangeRateSource = GetExchangeSourceBySourceCode(currencyCode);
+            _logger.LogInformation($"Exchange Source Selected:{exchangeRateSource.GetType().Name}");
+            var exchangeRate = await exchangeRateSource.GetRate();
+            _logger.LogInformation($"Exchange Rate: {JsonConvert.SerializeObject(exchangeRate)}");
+            return exchangeRate;
         }
     }
 }

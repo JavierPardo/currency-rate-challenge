@@ -19,12 +19,22 @@ namespace WebApi.Filters
         {
             if (context.Exception is WrongCurrencyException exception)
             {
-                var currencyCode = context.ModelState["currencyCode"].RawValue;
-                context.Result = new ObjectResult($"Currency \"{currencyCode}\" was not found! Please try Again or contact Administrator")
+                context.Result = new ObjectResult($"Currency sent was not found! Please try Again or contact Administrator")
                 {
                     StatusCode = StatusCodes.Status400BadRequest,
                 };
                 context.ExceptionHandled = true;
+            }
+            if (context.Exception is OverMonthlyLimitException overMontlyLimitException)
+            {
+                var currencyCode = overMontlyLimitException.CurrencyCode;
+                var amount= overMontlyLimitException.Amount;
+                context.Result = new ObjectResult($"Can't buy \"{currencyCode}\" the monthly limit is reached with \"{amount}\"")
+                {
+                    StatusCode = StatusCodes.Status400BadRequest,
+                };
+                context.ExceptionHandled = true;
+
             }
         }
     }

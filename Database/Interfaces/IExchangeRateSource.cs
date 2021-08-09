@@ -10,5 +10,6 @@ namespace Database.Interfaces
     public interface IExchangeRateSource
     {
         Task<ExchangeRate> GetRate(CancellationToken cancelToken = default(CancellationToken));
+        decimal GetLimit();
     }
 }

@@ -11,20 +11,22 @@ namespace WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ExchangeTransaction : ControllerBase
+    public class ExchangeTransactionController : ControllerBase
     {
         private readonly IExchangeTransactionService _exchangeTransactionService;
 
-        public ExchangeTransaction(IExchangeTransactionService exchangeTransactionService)
+        public ExchangeTransactionController(IExchangeTransactionService exchangeTransactionService)
         {
             _exchangeTransactionService = exchangeTransactionService;
         }
 
         // POST api/<ExchangeTransaction>
         [HttpPost]
-        public IActionResult Post([FromBody] Model.ExchangeTransaction exchangeTransaction)
+        public async Task<Model.ExchangeTransaction> Post([FromBody] Model.ExchangeTransaction exchangeTransaction)
         {
-            return Ok(_exchangeTransactionService.Purchase(exchangeTransaction));
+            await _exchangeTransactionService.Purchase(exchangeTransaction);
+            
+            return exchangeTransaction;
         }
     }
 }
